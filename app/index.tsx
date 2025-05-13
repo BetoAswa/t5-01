@@ -7,17 +7,14 @@ import { CameraView, CameraType, useCameraPermissions, BarcodeScanningResult } f
 import { connectDb } from "../src/database";
 
 
-interface ScannerCode {
-    code: BarcodeScanningResult,
-    location: Location.LocationObject
-}
+import { ScannedCode } from "../src/models";
 
 export default () => {
     const [location, setLocation] = useState<Location.LocationObject | null>(null);
     const [errorMsg, setErrorMsg] = useState<string | null>(null);
     const [facing, setFacing] = useState<CameraType>("back");
     const [permission, requestPermission] = useCameraPermissions();
-    const [scannedCodes, setScannedCodes] = useState<ScannerCode[]>([]);
+    const [scannedCodes, setScannedCodes] = useState<ScannedCode[]>([]);
 
     useEffect(() => {
         async function getCurrentLocation() {
@@ -30,7 +27,12 @@ export default () => {
             let location = await Location.getCurrentPositionAsync({});
             setLocation(location);
         }
+        async function retrieveLocalDbData() {
+            const db = await connectDb();
+            setScannedCodes(await db.consultarCodigos());
+        }
         getCurrentLocation();
+        retrieveLocalDbData();
     }, []);
 
     if (!permission) {
@@ -59,28 +61,29 @@ export default () => {
         } else {
             alert(result.data)
         }
-        setScannedCodes([{code: result, location: location!}, ...scannedCodes]);
+        
         const db = await connectDb();
         await db.insertarCodigo(result.data, result.type);
+        setScannedCodes(await db.consultarCodigos());
         console.log(await db.consultarCodigos())
     }
 
-    const ScannedItem = function ({ item }: { item: ScannerCode }) {
+    const ScannedItem = function ({ item }: { item: ScannedCode }) {
       const onCopyPress = function(){
-        Clipboard.setStringAsync(item.code.data);
+        Clipboard.setStringAsync(item.data);
       };
         return (
             <View>
-                <Text>{item.code.data}</Text>
+                <Text>{item.data}</Text>
                 <TouchableOpacity>
                   <Text>Copiar</Text>
                 </TouchableOpacity>
-                { item.location && (
+                {/* { item.location && (
                     <>
                      <Text>{item.location?.timestamp}</Text>
                      <Text>Lat {item.location?.coords.latitude}, Long: {item.location?.coords.longitude}</Text>
                     </>
-                )}
+                )} */}
             </View>
         )
     }
@@ -94,7 +97,7 @@ export default () => {
                 onBarcodeScanned={onBarcodeScanned}
             />
             <FlatList data={scannedCodes}
-                keyExtractor={(item) => item.location?.timestamp.toFixed(0)}
+                keyExtractor={(item) => item.id}
                 renderItem={ScannedItem}
             />
         </View>

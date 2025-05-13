@@ -1,14 +1,16 @@
 import * as SQLite from "expo-sqlite";
 
+import {ScannedCode} from "./models"
+
 export async function connectDb()
 {
     return new Database(await SQLite.openDatabaseAsync('ScanQR')); 
 }
 
-class Database {
+export class Database {
 
     constructor(private db:SQLite.SQLiteDatabase){
-        this.init
+        this.init()
     }
     private async init(){
         
@@ -35,7 +37,7 @@ class Database {
     }
 
     async consultarCodigos(){
-        const result = await this.db.getAllAsync<{id:string, data:string, type:string}>(
+        const result = await this.db.getAllAsync<ScannedCode>(
             'SELECT * FROM codigos'
         );
         return result; 
