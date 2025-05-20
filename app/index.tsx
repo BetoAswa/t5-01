@@ -120,7 +120,7 @@ const deleteCodigo = async (id: string) => {
 };
 
 
-  // Generar id simple (puedes usar uuid si quieres)
+  // Generar id simple 
   function generateId() {
     return Math.random().toString(36).substring(2, 12);
   }
