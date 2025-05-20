@@ -25,7 +25,8 @@
     "expo-sqlite": "~15.2.9",
     "expo-location": "~18.1.4",
     "expo-clipboard": "~7.1.4",
-    "expo-camera": "~16.1.6"
+    "expo-camera": "~16.1.6",
+    "expo-notifications": "~0.31.2"
   },
   "devDependencies": {
     "@babel/core": "^7.25.2",
